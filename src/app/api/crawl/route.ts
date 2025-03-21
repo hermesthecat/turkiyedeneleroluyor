@@ -74,12 +74,24 @@ export async function GET(request: NextRequest) {
     if (geminiApiKey) {
       console.log('Gemini API anahtarı bulundu, haberler işleniyor...');
       
-      // Her bir haberi Gemini ile işle
-      const islenmisPosts = await Promise.all(
-        haberler.map(haber => processNewsWithGemini(haber as IHaber))
-      );
+      // Her bir haberi sırayla işle (Promise.all yerine)
+      islenmisDizi = [];
+      for (const haber of haberler) {
+        try {
+          console.log(`Sıradaki haber işleniyor: "${haber.baslik?.substring(0, 30)}..."`);
+          const islenmisPosts = await processNewsWithGemini(haber as IHaber);
+          if (islenmisPosts) {
+            islenmisDizi.push(islenmisPosts as IHaber);
+            console.log(`Haber başarıyla işlendi. İşlenen toplam haber: ${islenmisDizi.length}`);
+          }
+        } catch (error) {
+          console.error(`Haber işleme hatası: ${error}`);
+        }
+        
+        // Her istekten sonra kısa bir gecikme ekleyelim (rate limit'e takılmamak için)
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       
-      islenmisDizi = islenmisPosts.filter(Boolean) as IHaber[];
       console.log(`${islenmisDizi.length} haber başarıyla işlendi.`);
     } else {
       console.log('Gemini API anahtarı bulunamadı, haberler ham haliyle kaydedilecek.');
