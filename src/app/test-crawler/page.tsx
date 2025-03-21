@@ -53,7 +53,7 @@ export default function TestCrawler() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 text-white">
-      <h1 className="text-2xl font-bold mb-4 text-white">Crawler Test Sayfası</h1>
+      <h1 className="text-2xl font-bold mb-4 text-white text-center">Crawler</h1>
 
       <div className="mb-4">
         <button

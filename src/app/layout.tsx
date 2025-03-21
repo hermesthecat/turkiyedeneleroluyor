@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Türkiye\'de Neler Oluyor',
-  description: 'Türkiye\'deki güncel haberlerin özet ve analizleri',
+  description: 'Türkiye\'deki güncel haberlerin özetleri',
   authors: [{ name: 'A. Kerem Gök' }],
 }
 
@@ -33,7 +33,7 @@ export default function RootLayout({
                   </li>
                   <li>
                     <Link href="/test-crawler" className="hover:text-primary">
-                      Crawler Test
+                      Craw
                     </Link>
                   </li>
                 </ul>

@@ -76,9 +76,6 @@ export default async function Home() {
                 <li className="mb-2">• Haber kaynaklarına erişimde problem yaşanıyor olabilir</li>
                 <li className="mb-2">• Veritabanı bağlantısında sorun olabilir</li>
               </ul>
-              <p className="text-slate-600">
-                Haberleri güncellemek için lütfen <Link href="/test-crawler" className="text-blue-600 hover:underline">Crawler Test</Link> sayfasını kullanın.
-              </p>
             </div>
           )}
         </div>
