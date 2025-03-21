@@ -38,7 +38,9 @@ export default async function Home() {
               <article key={haber._id} className="card hover:shadow-lg transition-shadow">
                 <div className="relative w-full h-48 mb-4">
                   <Image 
-                    src={haber.resim_url || 'https://picsum.photos/800/400'}
+                    src={haber.resim_url.startsWith('/uploads') 
+                      ? haber.resim_url 
+                      : (haber.resim_url || 'https://picsum.photos/800/400')}
                     alt={haber.baslik}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

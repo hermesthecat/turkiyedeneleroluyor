@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { tumKaynaklariCrawlEt } from '@/app/utils/haberCrawler';
 import { processNewsWithGemini } from '@/app/utils/geminiProcessor';
 import connectToDatabase from '@/app/lib/mongodb';
+import { cleanUploadsDir, downloadImage } from '@/app/utils/fileHelper';
+import mongoose from 'mongoose';
 
 export interface IHaber {
   baslik: string;
@@ -46,6 +48,10 @@ export async function GET(request: NextRequest) {
     // MongoDB'ye bağlan
     console.log('Veritabanına bağlanılıyor...');
     await connectToDatabase();
+    
+    // Uploads klasörünü temizle
+    console.log('Uploads klasörü temizleniyor...');
+    await cleanUploadsDir();
     
     // Mevcut tüm haberleri sil
     console.log('Veritabanındaki tüm haberler siliniyor...');
@@ -106,8 +112,23 @@ export async function GET(request: NextRequest) {
             console.log(`Haber "${islenmisPosts.baslik?.substring(0, 30)}..." veritabanına kaydediliyor...`);
             
             try {
+              // Resim indirme işlemi
+              let localResimUrl = '';
+              if (islenmisPosts.resim_url) {
+                try {
+                  // MongoDB'de yeni bir ObjectId oluştur
+                  const fileId = new mongoose.Types.ObjectId().toString();
+                  // Resmi indir
+                  localResimUrl = await downloadImage(islenmisPosts.resim_url, fileId);
+                  console.log(`Görsel indirildi: ${localResimUrl}`);
+                } catch (imgError) {
+                  console.error(`Görsel indirme hatası:`, imgError);
+                  localResimUrl = '';
+                }
+              }
+              
               // Haberi veritabanına kaydet
-              await HaberModel.updateOne(
+              const updateResult = await HaberModel.updateOne(
                 { 
                   kaynak_url: (haber as IHaber).link,
                   baslik: islenmisPosts.baslik
@@ -118,7 +139,7 @@ export async function GET(request: NextRequest) {
                   icerik: islenmisPosts.icerik || '',
                   kaynak: islenmisPosts.kaynak || (haber as IHaber).kaynak,
                   kaynak_url: (haber as IHaber).link,
-                  resim_url: islenmisPosts.resim_url || '',
+                  resim_url: localResimUrl || islenmisPosts.resim_url || '',
                   kategori: islenmisPosts.kategori || 'Genel',
                   etiketler: islenmisPosts.etiketler || [],
                   yayinTarihi: tarih
@@ -198,6 +219,26 @@ export async function GET(request: NextRequest) {
         
         for (const op of bulkOps) {
           try {
+            // Resim indirme işlemi
+            let localResimUrl = '';
+            const haber = op.updateOne.update.$set;
+            if (haber.resim_url) {
+              try {
+                // MongoDB'de yeni bir ObjectId oluştur
+                const fileId = new mongoose.Types.ObjectId().toString();
+                // Resmi indir
+                localResimUrl = await downloadImage(haber.resim_url, fileId);
+                console.log(`Görsel indirildi: ${localResimUrl}`);
+                
+                // Yerel resim URL'sini güncelle
+                if (localResimUrl) {
+                  haber.resim_url = localResimUrl;
+                }
+              } catch (imgError) {
+                console.error(`Görsel indirme hatası:`, imgError);
+              }
+            }
+            
             await HaberModel.updateOne(
               op.updateOne.filter,
               op.updateOne.update,

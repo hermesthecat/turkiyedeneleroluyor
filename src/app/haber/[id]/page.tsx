@@ -79,7 +79,9 @@ export default async function HaberDetay({ params }: { params: { id: string } })
       <article className="card">
         <div className="relative w-full h-64 mb-6">
           <Image 
-            src={gosterilecekHaber.resim_url || 'https://picsum.photos/800/400'}
+            src={gosterilecekHaber.resim_url.startsWith('/uploads') 
+              ? gosterilecekHaber.resim_url 
+              : (gosterilecekHaber.resim_url || 'https://picsum.photos/800/400')}
             alt={gosterilecekHaber.baslik}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
