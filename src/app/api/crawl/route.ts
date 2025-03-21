@@ -108,12 +108,15 @@ export async function GET(request: NextRequest) {
             try {
               // Haberi veritabanına kaydet
               await HaberModel.updateOne(
-                { kaynak_url: (haber as IHaber).link },
+                { 
+                  kaynak_url: (haber as IHaber).link,
+                  baslik: islenmisPosts.baslik
+                },
                 { $set: { 
                   baslik: islenmisPosts.baslik,
                   ozet: islenmisPosts.ozet || `${islenmisPosts.baslik} hakkında detaylı bilgi için tıklayın.`,
                   icerik: islenmisPosts.icerik || '',
-                  kaynak: islenmisPosts.kaynak,
+                  kaynak: islenmisPosts.kaynak || (haber as IHaber).kaynak,
                   kaynak_url: (haber as IHaber).link,
                   resim_url: islenmisPosts.resim_url || '',
                   kategori: islenmisPosts.kategori || 'Genel',

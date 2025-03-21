@@ -22,7 +22,11 @@ const HaberSchema: Schema = new Schema(
     ozet: { type: String, required: true },
     icerik: { type: String, required: true },
     kaynak: { type: String, required: true },
-    kaynak_url: { type: String, required: true },
+    kaynak_url: { 
+      type: String, 
+      required: true,
+      index: true // kaynak_url için index ekliyoruz
+    },
     resim_url: { type: String, required: false },
     kategori: { type: String, required: true },
     etiketler: { type: [String], default: [] },
@@ -30,6 +34,9 @@ const HaberSchema: Schema = new Schema(
   },
   { timestamps: true }
 );
+
+// kaynak_url ve baslik kombinasyonu için bileşik unique index
+HaberSchema.index({ kaynak_url: 1, baslik: 1 }, { unique: true });
 
 // Mongoose modeli oluşturma veya varsa getirme
 let HaberModel: Model<IHaber>;

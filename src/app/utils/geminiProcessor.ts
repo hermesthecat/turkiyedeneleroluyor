@@ -104,6 +104,7 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
           ozet: processedNews.ozet,
           icerik: processedNews.icerik,
           etiketler: processedNews.etiketler,
+          kaynak_url: (haber as any).link // Type assertion kullan
         };
       } catch (parseError) {
         console.error("Gemini yanıtı JSON olarak ayrıştırılamadı:", parseError);
