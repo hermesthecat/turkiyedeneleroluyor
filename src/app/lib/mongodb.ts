@@ -1,8 +1,27 @@
 import mongoose from 'mongoose';
 
+// MongoDB URI'den veritabanı adını kontrol et
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/turkiyedeneleroluyor';
 
-if (!MONGODB_URI) {
+// URI'ye veritabanı adı eklenmemiş ise ekle
+let connectionString = MONGODB_URI;
+if (MONGODB_URI && !MONGODB_URI.includes('turkiyedeneleroluyor') && MONGODB_URI.includes('mongodb+srv')) {
+  // URI'de veritabanı adı yok, eklenmesi gerekiyor
+  // mongodb+srv://user:pass@cluster.mongodb.net/ -> mongodb+srv://user:pass@cluster.mongodb.net/turkiyedeneleroluyor
+  const questionMarkIndex = MONGODB_URI.indexOf('?');
+  if (questionMarkIndex !== -1) {
+    // Soru işareti varsa, veritabanı adını ondan önce ekle
+    connectionString = MONGODB_URI.slice(0, questionMarkIndex) + 
+      '/turkiyedeneleroluyor' + 
+      MONGODB_URI.slice(questionMarkIndex);
+  } else {
+    // Soru işareti yoksa, doğrudan sona ekle
+    connectionString = MONGODB_URI + '/turkiyedeneleroluyor';
+  }
+  console.log('Veritabanı adı URI\'ye eklendi');
+}
+
+if (!connectionString) {
   throw new Error(
     'MongoDB URI bulunamadı. Lütfen .env dosyasında MONGODB_URI değişkenini tanımlayın.'
   );
@@ -44,7 +63,9 @@ async function connectToDatabase() {
       };
 
       console.log('MongoDB bağlantısı başlatılıyor...');
-      cached.promise = mongoose.connect(MONGODB_URI, opts)
+      console.log(`Bağlanılacak URI: ${connectionString.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')}`); // Şifreyi gizleyerek yazdır
+      
+      cached.promise = mongoose.connect(connectionString, opts)
         .then((mongoose) => {
           console.log('MongoDB bağlantısı başarılı!');
           return mongoose;
