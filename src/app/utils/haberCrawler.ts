@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { parseHTML } from 'linkedom';
-import { IHaber } from '@/app/models/Haber';
+import { IHaber } from '@/app/api/crawl/route';
 
 // Haber kaynağı tanımı
 interface HaberKaynagi {
@@ -296,6 +296,7 @@ export async function parseHaberler(html: string, kaynak: HaberKaynagi): Promise
           ozet: summary || `${title} hakkında detaylı bilgi için tıklayın.`,
           kaynak: kaynak.name,
           kaynak_url: link,
+          link: link,
           resim_url: image,
           kategori: category,
           yayinTarihi: new Date(),

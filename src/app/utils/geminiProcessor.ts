@@ -1,4 +1,4 @@
-import { IHaber } from '@/app/models/Haber';
+import { IHaber } from '@/app/api/crawl/route';
 import axios from 'axios';
 
 // Gemini API için gerekli tip tanımlamaları
@@ -104,7 +104,8 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
           ozet: processedNews.ozet,
           icerik: processedNews.icerik,
           etiketler: processedNews.etiketler,
-          kaynak_url: (haber as any).link // Type assertion kullan
+          kaynak_url: (haber as any).link, // Type assertion kullan
+          link: (haber as any).link // Orijinal link değerini koru
         };
       } catch (parseError) {
         console.error("Gemini yanıtı JSON olarak ayrıştırılamadı:", parseError);

@@ -127,10 +127,24 @@ export async function GET(request: NextRequest) {
                 }
               }
               
+              // Debug: Link değerini kontrol et
+              console.log(`HABER LINK KONTROL (${islenmisPosts.baslik?.substring(0, 20)}...): `, {
+                orijinalLink: (haber as IHaber).link,
+                islenmisPosts_link: (islenmisPosts as any).link,
+                islenmisPosts_kaynak_url: (islenmisPosts as any).kaynak_url
+              });
+              
+              // Link değerini garanti edelim
+              const garantiLink = (haber as IHaber).link || (islenmisPosts as any).link || (islenmisPosts as any).kaynak_url || '';
+              
+              if (!garantiLink) {
+                console.warn(`UYARI: ${islenmisPosts.baslik} haberi için link bilgisi bulunamadı!`);
+              }
+              
               // Haberi veritabanına kaydet
               const updateResult = await HaberModel.updateOne(
                 { 
-                  kaynak_url: (haber as IHaber).link,
+                  kaynak_url: garantiLink,
                   baslik: islenmisPosts.baslik
                 },
                 { $set: { 
@@ -138,7 +152,7 @@ export async function GET(request: NextRequest) {
                   ozet: islenmisPosts.ozet || `${islenmisPosts.baslik} hakkında detaylı bilgi için tıklayın.`,
                   icerik: islenmisPosts.icerik || '',
                   kaynak: islenmisPosts.kaynak || (haber as IHaber).kaynak,
-                  kaynak_url: (haber as IHaber).link,
+                  kaynak_url: garantiLink,
                   resim_url: localResimUrl || islenmisPosts.resim_url || '',
                   kategori: islenmisPosts.kategori || 'Genel',
                   etiketler: islenmisPosts.etiketler || [],
@@ -222,6 +236,20 @@ export async function GET(request: NextRequest) {
             // Resim indirme işlemi
             let localResimUrl = '';
             const haber = op.updateOne.update.$set;
+            
+            // Debug: Link değerini kontrol et (bulk işlem durumunda)
+            console.log(`BULK HABER LINK KONTROL (${haber.baslik?.substring(0, 20)}...): `, {
+              filter_kaynak_url: op.updateOne.filter.kaynak_url,
+              haber_kaynak_url: haber.kaynak_url
+            });
+            
+            // Link kontrolü
+            if (!haber.kaynak_url) {
+              console.warn(`UYARI: ${haber.baslik} haberi için kaynak_url bilgisi bulunamadı!`);
+              // Filtre değerini kaynak_url olarak kullan
+              haber.kaynak_url = op.updateOne.filter.kaynak_url || '';
+            }
+            
             if (haber.resim_url) {
               try {
                 // MongoDB'de yeni bir ObjectId oluştur
