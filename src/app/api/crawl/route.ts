@@ -40,6 +40,16 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Crawler başlatılıyor...');
     
+    // MongoDB'ye bağlan
+    console.log('Veritabanına bağlanılıyor...');
+    await connectToDatabase();
+    
+    // Mevcut tüm haberleri sil
+    console.log('Veritabanındaki tüm haberler siliniyor...');
+    const HaberModel = (await import('@/app/models/Haber')).default;
+    const deleteResult = await HaberModel.deleteMany({});
+    console.log(`Veritabanından ${deleteResult.deletedCount} haber silindi.`);
+    
     // Tüm kaynakları crawl et
     const haberler = await tumKaynaklariCrawlEt();
     console.log(`Toplam ${haberler.length} haber bulundu.`);
@@ -76,10 +86,6 @@ export async function GET(request: NextRequest) {
       islenmisDizi = haberler as IHaber[];
     }
     
-    // MongoDB'ye bağlan
-    console.log('Veritabanına bağlanılıyor...');
-    await connectToDatabase();
-    
     // Haberleri veritabanına ekle veya güncelle
     const bulkOps = islenmisDizi.map(haber => ({
       updateOne: {
@@ -90,8 +96,6 @@ export async function GET(request: NextRequest) {
     }));
     
     if (bulkOps.length > 0) {
-      const HaberModel = (await import('@/app/models/Haber')).default;
-      
       for (const op of bulkOps) {
         await HaberModel.updateOne(
           op.updateOne.filter,
