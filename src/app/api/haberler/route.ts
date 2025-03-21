@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     // Veritabanına bağlan
     await connectToDatabase();
-    
+
     // Sorgu parametrelerini al
     const searchParams = request.nextUrl.searchParams;
     const limit = Number(searchParams.get('limit')) || 20;
@@ -14,23 +14,23 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'yayinTarihi';
     const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1;
     const kategori = searchParams.get('kategori') || null;
-    
+
     // Sorgu oluştur
     const query: any = {};
     if (kategori) {
       query.kategori = kategori;
     }
-    
+
     // Haberleri getir
     const haberler = await HaberModel.find(query)
       .sort({ [sortBy]: sortOrder })
       .skip(skip)
       .limit(limit)
       .lean();
-    
+
     // Toplam sayıyı getir
     const total = await HaberModel.countDocuments(query);
-    
+
     return NextResponse.json({
       haberler,
       total,
@@ -52,28 +52,28 @@ export async function POST(request: NextRequest) {
   try {
     // Veritabanına bağlan
     await connectToDatabase();
-    
+
     // İstek gövdesini al
     const body = await request.json();
     const { id } = body;
-    
+
     if (!id) {
       return NextResponse.json(
         { error: 'Haber ID\'si belirtilmedi' },
         { status: 400 }
       );
     }
-    
+
     // Haberi getir
     const haber = await HaberModel.findById(id).lean();
-    
+
     if (!haber) {
       return NextResponse.json(
         { error: 'Haber bulunamadı' },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json({
       haber,
       success: true

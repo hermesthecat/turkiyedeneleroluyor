@@ -25,14 +25,14 @@ interface ProcessedNews {
 export async function processNewsWithGemini(haber: Partial<IHaber>): Promise<Partial<IHaber>> {
   try {
     console.log(`Gemini API'ye haber gönderiliyor: ${haber.baslik}`);
-    
+
     // API anahtarını .env dosyasından al
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       console.error("GEMINI_API_KEY bulunamadı. .env.local dosyasına eklediğinizden emin olun.");
       return haber; // Anahtar yoksa orijinal haberi döndür
     }
-    
+
     // Gemini'ye gönderilecek istek metni
     const prompt = `Aşağıdaki haberi oku, analiz et ve daha ilgi çekici ve bilgilendirici hale getir.
 
@@ -82,21 +82,21 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
 
       // API yanıtını işle
       const data: GeminiResponse = response.data;
-      
+
       // Response içeriğini kontrol et
       if (!data || !data.candidates || !data.candidates.length || !data.candidates[0].content) {
         console.error("Gemini API yanıtı boş veya geçersiz format döndürdü:", data);
         return haber; // Orijinal haberi döndür
       }
-      
+
       const generatedText = data.candidates[0].content.parts[0].text;
-      
+
       // JSON yanıtını işle
       try {
         // Gemini bazen JSON etrafına ``` ekleyebilir, bunları kaldır
         const cleanedText = generatedText.replace(/```json\n|\n```|```/g, "");
         const processedNews: ProcessedNews = JSON.parse(cleanedText);
-        
+
         // Güncellenmiş haberi döndür
         return {
           ...haber,
@@ -115,7 +115,7 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
     } catch (error: any) {
       // Hata detaylarını daha kapsamlı logla
       console.error("Gemini API hatası:");
-      
+
       if (error.response) {
         // Sunucunun yanıt döndüğü durumda
         console.error(`Durum kodu: ${error.response.status}`);
@@ -129,7 +129,7 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
         // İstek oluşturulurken bir hata oldu
         console.error("İstek hatası:", error.message);
       }
-      
+
       // Orijinal haberi değiştirmeden döndür
       return haber;
     }
@@ -144,16 +144,16 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
  */
 export async function batchProcessNewsWithGemini(haberler: Partial<IHaber>[]): Promise<Partial<IHaber>[]> {
   console.log(`${haberler.length} haber Gemini ile işlenecek`);
-  
+
   // Gemini API'yi aşırı yüklememek için ardışık işleme
   const processedNews: Partial<IHaber>[] = [];
-  
+
   for (const haber of haberler) {
     try {
       // Her bir haberi işle
       const processedHaber = await processNewsWithGemini(haber);
       processedNews.push(processedHaber);
-      
+
       // API istekleri arasında kısa bir bekleme süresi
       await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (error) {
@@ -161,7 +161,7 @@ export async function batchProcessNewsWithGemini(haberler: Partial<IHaber>[]): P
       processedNews.push(haber); // Hata durumunda orijinal haberi ekle
     }
   }
-  
+
   console.log(`${processedNews.length} haber başarıyla işlendi`);
   return processedNews;
 } 

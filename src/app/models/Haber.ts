@@ -22,8 +22,8 @@ const HaberSchema: Schema = new Schema(
     ozet: { type: String, required: true },
     icerik: { type: String, required: true },
     kaynak: { type: String, required: true },
-    kaynak_url: { 
-      type: String, 
+    kaynak_url: {
+      type: String,
       required: true,
       index: true // kaynak_url için index ekliyoruz
     },

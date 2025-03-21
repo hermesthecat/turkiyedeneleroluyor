@@ -23,7 +23,7 @@ export default function RootLayout({
           <div className="container py-4">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
               <h1 className="text-2xl font-bold text-primary">Türkiye&apos;de Neler Oluyor?</h1>
-              
+
               <nav>
                 <ul className="flex space-x-4">
                   <li>

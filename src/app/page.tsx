@@ -7,13 +7,13 @@ import HaberModel from '@/app/models/Haber';
 async function getHaberler() {
   try {
     await connectToDatabase();
-    
+
     // En son eklenen 6 haberi getir
     const haberler = await HaberModel.find({})
       .sort({ yayinTarihi: -1 })
       .limit(6)
       .lean();
-    
+
     return JSON.parse(JSON.stringify(haberler)); // Dates etc. için serialization
   } catch (error) {
     console.error('Haberler getirilirken hata:', error);
@@ -24,7 +24,7 @@ async function getHaberler() {
 export default async function Home() {
   // Veritabanından haberleri getir
   const haberler = await getHaberler();
-  
+
   // Eğer veritabanında haber yoksa, boş dizi kullan (örnek haberler kaldırıldı)
   const gosterilecekHaberler = haberler;
 
@@ -37,9 +37,9 @@ export default async function Home() {
             gosterilecekHaberler.map((haber: any) => (
               <article key={haber._id} className="card hover:shadow-lg transition-shadow">
                 <div className="relative w-full h-48 mb-4">
-                  <Image 
-                    src={haber.resim_url.startsWith('/uploads') 
-                      ? haber.resim_url 
+                  <Image
+                    src={haber.resim_url.startsWith('/uploads')
+                      ? haber.resim_url
                       : (haber.resim_url || 'https://picsum.photos/800/400')}
                     alt={haber.baslik}
                     fill
@@ -83,9 +83,9 @@ export default async function Home() {
           )}
         </div>
       </section>
-      
+
       <section>
-        <div className="card p-6 bg-primary bg-opacity-10">
+        {/* <div className="card p-6 bg-primary bg-opacity-10">
           <h2 className="text-2xl font-bold mb-4">Bültenimize Abone Olun</h2>
           <p className="mb-4">Türkiye'deki gelişmelerden anında haberdar olmak için bültenimize abone olun.</p>
           <div className="flex flex-col sm:flex-row gap-2">
@@ -96,7 +96,7 @@ export default async function Home() {
             />
             <button className="btn">Abone Ol</button>
           </div>
-        </div>
+        </div> */}
       </section>
     </div>
   )

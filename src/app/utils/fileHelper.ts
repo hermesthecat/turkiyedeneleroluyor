@@ -33,18 +33,18 @@ export async function cleanUploadsDir() {
   try {
     // Klasörün var olduğundan emin ol
     await ensureUploadsDir();
-    
+
     // Klasördeki tüm dosyaları oku
     const files = await readdir(UPLOADS_DIR);
     console.log(`Uploads klasöründe ${files.length} dosya bulundu`);
-    
+
     // Her dosyayı sil
-    const deletePromises = files.map(file => 
+    const deletePromises = files.map(file =>
       unlink(path.join(UPLOADS_DIR, file))
         .then(() => console.log(`Dosya silindi: ${file}`))
         .catch(err => console.error(`Dosya silme hatası (${file}):`, err))
     );
-    
+
     await Promise.all(deletePromises);
     console.log('Tüm dosyalar temizlendi');
   } catch (error) {
@@ -63,16 +63,16 @@ export async function downloadImage(imageUrl: string, fileName: string): Promise
   try {
     // Klasörün var olduğundan emin ol
     await ensureUploadsDir();
-    
+
     // Dosya uzantısını belirle
     const extension = path.extname(imageUrl).split('?')[0] || '.jpg';
-    
+
     // Tam dosya yolu
     const filePath = path.join(UPLOADS_DIR, `${fileName}${extension}`);
     const publicPath = `/uploads/${fileName}${extension}`;
-    
+
     console.log(`Görsel indiriliyor: ${imageUrl}`);
-    
+
     // Görseli indir
     const response = await axios({
       method: 'GET',
@@ -83,17 +83,17 @@ export async function downloadImage(imageUrl: string, fileName: string): Promise
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       }
     });
-    
+
     // Dosyaya yaz
     const writer = fs.createWriteStream(filePath);
     response.data.pipe(writer);
-    
+
     return new Promise((resolve, reject) => {
       writer.on('finish', () => {
         console.log(`Görsel kaydedildi: ${filePath}`);
         resolve(publicPath);
       });
-      
+
       writer.on('error', err => {
         console.error(`Görsel kaydetme hatası:`, err);
         reject(err);

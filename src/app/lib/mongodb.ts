@@ -11,8 +11,8 @@ if (MONGODB_URI && !MONGODB_URI.includes('turkiyedeneleroluyor') && MONGODB_URI.
   const questionMarkIndex = MONGODB_URI.indexOf('?');
   if (questionMarkIndex !== -1) {
     // Soru işareti varsa, veritabanı adını ondan önce ekle
-    connectionString = MONGODB_URI.slice(0, questionMarkIndex) + 
-      '/turkiyedeneleroluyor' + 
+    connectionString = MONGODB_URI.slice(0, questionMarkIndex) +
+      '/turkiyedeneleroluyor' +
       MONGODB_URI.slice(questionMarkIndex);
   } else {
     // Soru işareti yoksa, doğrudan sona ekle
@@ -64,7 +64,7 @@ async function connectToDatabase() {
 
       console.log('MongoDB bağlantısı başlatılıyor...');
       console.log(`Bağlanılacak URI: ${connectionString.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')}`); // Şifreyi gizleyerek yazdır
-      
+
       cached.promise = mongoose.connect(connectionString, opts)
         .then((mongoose) => {
           console.log('MongoDB bağlantısı başarılı!');
@@ -78,7 +78,7 @@ async function connectToDatabase() {
     } else {
       console.log('Mevcut MongoDB bağlantı isteği bekleniyor...');
     }
-    
+
     cached.conn = await cached.promise;
     return cached.conn;
   } catch (error) {

@@ -18,24 +18,21 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 @layer components {
   .container {
     @apply mx-auto px-4;
   }
-  
+
   .btn {
     @apply px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 transition-opacity;
   }
-  
+
   .card {
     @apply bg-white dark:bg-secondary rounded-lg shadow-md p-4;
   }
-} 
+}
