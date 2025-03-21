@@ -5,7 +5,7 @@ import connectToDatabase from '@/app/lib/mongodb';
 
 export interface IHaber {
   baslik: string;
-  link: string;
+  link: string;  // Crawler'dan gelen haberler için link
   kaynak: string;
   tarih: string;
   icerik: string;
@@ -13,6 +13,9 @@ export interface IHaber {
   ozet?: string;
   kategori?: string;
   resim_url?: string;
+  etiketler?: string[];
+  kaynak_url?: string; // Mongoose için kaynak_url
+  yayinTarihi?: Date;  // Veritabanında kullanılan tarih alanı
   son_guncelleme?: Date;
 }
 
@@ -73,16 +76,59 @@ export async function GET(request: NextRequest) {
     
     if (geminiApiKey) {
       console.log('Gemini API anahtarı bulundu, haberler işleniyor...');
+      const HaberModel = (await import('@/app/models/Haber')).default;
       
-      // Her bir haberi sırayla işle (Promise.all yerine)
+      // Her bir haberi sırayla işle ve hemen kaydet
       islenmisDizi = [];
+      let islenmisSayisi = 0;
+      
       for (const haber of haberler) {
         try {
           console.log(`Sıradaki haber işleniyor: "${haber.baslik?.substring(0, 30)}..."`);
           const islenmisPosts = await processNewsWithGemini(haber as IHaber);
+          
           if (islenmisPosts) {
-            islenmisDizi.push(islenmisPosts as IHaber);
-            console.log(`Haber başarıyla işlendi. İşlenen toplam haber: ${islenmisDizi.length}`);
+            // Haberi veritabanına kaydet
+            let tarih;
+            try {
+              if ((haber as IHaber).tarih) {
+                const tempDate = new Date((haber as IHaber).tarih);
+                // Geçerli bir tarih mi kontrol et
+                tarih = !isNaN(tempDate.getTime()) ? tempDate : new Date();
+              } else {
+                tarih = new Date();
+              }
+            } catch (error) {
+              console.log(`Tarih dönüştürme hatası: ${error}. Şimdiki zaman kullanılıyor.`);
+              tarih = new Date();
+            }
+            
+            console.log(`Haber "${islenmisPosts.baslik?.substring(0, 30)}..." veritabanına kaydediliyor...`);
+            
+            try {
+              // Haberi veritabanına kaydet
+              await HaberModel.updateOne(
+                { kaynak_url: (haber as IHaber).link },
+                { $set: { 
+                  baslik: islenmisPosts.baslik,
+                  ozet: islenmisPosts.ozet || `${islenmisPosts.baslik} hakkında detaylı bilgi için tıklayın.`,
+                  icerik: islenmisPosts.icerik || '',
+                  kaynak: islenmisPosts.kaynak,
+                  kaynak_url: (haber as IHaber).link,
+                  resim_url: islenmisPosts.resim_url || '',
+                  kategori: islenmisPosts.kategori || 'Genel',
+                  etiketler: islenmisPosts.etiketler || [],
+                  yayinTarihi: tarih
+                }},
+                { upsert: true }
+              );
+              
+              islenmisSayisi++;
+              console.log(`Haber başarıyla veritabanına kaydedildi. Toplam: ${islenmisSayisi}`);
+              islenmisDizi.push(islenmisPosts as IHaber);
+            } catch (dbError) {
+              console.error(`Veritabanı kayıt hatası: ${dbError}`);
+            }
           }
         } catch (error) {
           console.error(`Haber işleme hatası: ${error}`);
@@ -92,77 +138,95 @@ export async function GET(request: NextRequest) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       
-      console.log(`${islenmisDizi.length} haber başarıyla işlendi.`);
-    } else {
-      console.log('Gemini API anahtarı bulunamadı, haberler ham haliyle kaydedilecek.');
-      islenmisDizi = haberler as IHaber[];
-    }
-    
-    // Haberleri veritabanına ekle veya güncelle
-    const bulkOps = islenmisDizi.map(haber => {
-      // Tarih kontrolü - geçerli tarih oluştur
-      let tarih;
-      try {
-        if (haber.tarih) {
-          const tempDate = new Date(haber.tarih);
-          // Geçerli bir tarih mi kontrol et
-          tarih = !isNaN(tempDate.getTime()) ? tempDate : new Date();
-        } else {
-          tarih = new Date();
-        }
-      } catch (error) {
-        console.log(`Tarih dönüştürme hatası: ${error}. Şimdiki zaman kullanılıyor.`);
-        tarih = new Date();
-      }
-      
-      return {
-        updateOne: {
-          filter: { kaynak_url: haber.link },
-          update: { $set: { 
-            baslik: haber.baslik,
-            ozet: haber.ozet || `${haber.baslik} hakkında detaylı bilgi için tıklayın.`,
-            icerik: haber.icerik || '',
-            kaynak: haber.kaynak,
-            kaynak_url: haber.link,
-            resim_url: haber.resim_url || '',
-            kategori: haber.kategori || 'Genel',
-            etiketler: [],
-            yayinTarihi: tarih
-          }},
-          upsert: true
-        }
-      };
-    });
-    
-    if (bulkOps.length > 0) {
-      for (const op of bulkOps) {
-        await HaberModel.updateOne(
-          op.updateOne.filter,
-          op.updateOne.update,
-          { upsert: true }
-        );
-      }
-      
-      console.log(`Veritabanı işlemi tamamlandı: ${bulkOps.length} haber işlendi`);
+      console.log(`${islenmisDizi.length} haber başarıyla işlendi ve veritabanına kaydedildi.`);
       
       return NextResponse.json({
         success: true,
-        mesaj: 'Haberler başarıyla toplandı ve işlendi',
+        mesaj: 'Haberler başarıyla toplandı, işlendi ve kaydedildi',
         toplam_haber: haberler.length,
         islenen_haber: islenmisDizi.length,
         veritabani_sonuc: {
-          toplam_islenen: bulkOps.length
+          toplam_islenen: islenmisSayisi
         }
       });
     } else {
-      console.log('İşlenecek haber bulunamadı');
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'İşlenecek haber bulunamadı' 
-        }, 
-        { status: 404 }
-      );
+      console.log('Gemini API anahtarı bulunamadı, haberler ham haliyle kaydedilecek.');
+      islenmisDizi = haberler as IHaber[];
+      
+      // Haberleri veritabanına ekle veya güncelle
+      const bulkOps = islenmisDizi.map(haber => {
+        // Tarih kontrolü - geçerli tarih oluştur
+        let tarih;
+        try {
+          if ((haber as IHaber).tarih) {
+            const tempDate = new Date((haber as IHaber).tarih);
+            // Geçerli bir tarih mi kontrol et
+            tarih = !isNaN(tempDate.getTime()) ? tempDate : new Date();
+          } else {
+            tarih = new Date();
+          }
+        } catch (error) {
+          console.log(`Tarih dönüştürme hatası: ${error}. Şimdiki zaman kullanılıyor.`);
+          tarih = new Date();
+        }
+        
+        return {
+          updateOne: {
+            filter: { kaynak_url: (haber as IHaber).link },
+            update: { $set: { 
+              baslik: (haber as IHaber).baslik,
+              ozet: (haber as IHaber).ozet || `${(haber as IHaber).baslik} hakkında detaylı bilgi için tıklayın.`,
+              icerik: (haber as IHaber).icerik || '',
+              kaynak: (haber as IHaber).kaynak,
+              kaynak_url: (haber as IHaber).link,
+              resim_url: (haber as IHaber).resim_url || '',
+              kategori: (haber as IHaber).kategori || 'Genel',
+              etiketler: [],
+              yayinTarihi: tarih
+            }},
+            upsert: true
+          }
+        };
+      });
+      
+      if (bulkOps.length > 0) {
+        const HaberModel = (await import('@/app/models/Haber')).default;
+        let kaydedilenSayisi = 0;
+        
+        for (const op of bulkOps) {
+          try {
+            await HaberModel.updateOne(
+              op.updateOne.filter,
+              op.updateOne.update,
+              { upsert: true }
+            );
+            kaydedilenSayisi++;
+          } catch (error) {
+            console.error(`Veritabanı kayıt hatası: ${error}`);
+          }
+        }
+        
+        console.log(`Veritabanı işlemi tamamlandı: ${kaydedilenSayisi} haber işlendi`);
+        
+        return NextResponse.json({
+          success: true,
+          mesaj: 'Haberler başarıyla toplandı ve kaydedildi',
+          toplam_haber: haberler.length,
+          islenen_haber: islenmisDizi.length,
+          veritabani_sonuc: {
+            toplam_islenen: kaydedilenSayisi
+          }
+        });
+      } else {
+        console.log('İşlenecek haber bulunamadı');
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'İşlenecek haber bulunamadı' 
+          }, 
+          { status: 404 }
+        );
+      }
     }
   } catch (error) {
     console.error('Crawler API hatası:', error);
