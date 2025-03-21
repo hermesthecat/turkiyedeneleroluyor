@@ -79,6 +79,19 @@ export default function TestCrawler() {
         <div className="p-4 bg-red-50 border border-red-200 rounded mb-4">
           <h3 className="text-red-600 font-bold">Hata!</h3>
           <p>{error}</p>
+          {error.includes('404') && (
+            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="font-medium">Şu anda haber bulunamadı!</p>
+              <p className="text-sm">Aşağıdaki sebeplerden dolayı haber bulunamıyor olabilir:</p>
+              <ul className="list-disc pl-5 text-sm mt-1">
+                <li>Haber kaynaklarına erişilemiyor olabilir</li>
+                <li>Haber kaynaklarının yapısı değişmiş olabilir</li>
+                <li>Sunucular geçici olarak çalışmıyor olabilir</li>
+                <li>IP adresiniz engellenmiş olabilir</li>
+              </ul>
+              <p className="text-sm mt-2">Lütfen daha sonra tekrar deneyin.</p>
+            </div>
+          )}
         </div>
       )}
       

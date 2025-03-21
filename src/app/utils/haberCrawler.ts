@@ -18,65 +18,6 @@ interface HaberKaynagi {
   requiresJavaScript?: boolean;
 }
 
-// Örnek haberler (fallback verileri)
-const ornekHaberler: Partial<IHaber>[] = [
-  {
-    baslik: "Ekonomide yeni destek paketi açıklandı",
-    ozet: "Hazine ve Maliye Bakanlığı tarafından hazırlanan yeni ekonomik destek paketi bugün açıklandı.",
-    kaynak: "Ekonomi Haberleri",
-    kaynak_url: "https://example.com/ekonomi-haberleri/1",
-    resim_url: "https://picsum.photos/id/10/600/400",
-    kategori: "Ekonomi",
-    yayinTarihi: new Date(),
-    icerik: "<p>Hazine ve Maliye Bakanlığı tarafından hazırlanan yeni ekonomik destek paketi bugün açıklandı. Paket kapsamında KOBİ'lere özel yeni teşvikler sunulacak.</p><p>Destek paketinin detayları şöyle:</p><ul><li>Vergi indirimleri</li><li>İstihdam destekleri</li><li>Düşük faizli krediler</li></ul>",
-    etiketler: ["ekonomi", "destek paketi", "hazine", "maliye"]
-  },
-  {
-    baslik: "Milli futbol takımı hazırlıklarını tamamladı",
-    ozet: "A Milli Futbol Takımımız, yarın oynanacak kritik maç öncesi hazırlıklarını tamamladı.",
-    kaynak: "Spor Haberleri",
-    kaynak_url: "https://example.com/spor-haberleri/1",
-    resim_url: "https://picsum.photos/id/20/600/400",
-    kategori: "Spor",
-    yayinTarihi: new Date(),
-    icerik: "<p>A Milli Futbol Takımımız, yarın oynanacak kritik maç öncesi hazırlıklarını tamamladı. Teknik direktör, son taktik antrenmanında oyunculara özel talimatlar verdi.</p><p>Yarınki kadro şu şekilde olacak:</p><p>Kaleci: Altay Bayındır</p><p>Defans: Zeki, Merih, Ozan, Ferdi</p><p>Orta Saha: Okay, Orkun, Hakan</p><p>Forvet: Kerem, Cenk, Arda</p>",
-    etiketler: ["milli takım", "futbol", "hazırlık", "maç"]
-  },
-  {
-    baslik: "Meteoroloji'den kuvvetli yağış uyarısı",
-    ozet: "Meteoroloji Genel Müdürlüğü, yurdun batı kesimlerinde kuvvetli yağış beklendiğini duyurdu.",
-    kaynak: "Hava Durumu",
-    kaynak_url: "https://example.com/hava-durumu/1",
-    resim_url: "https://picsum.photos/id/30/600/400",
-    kategori: "Gündem",
-    yayinTarihi: new Date(),
-    icerik: "<p>Meteoroloji Genel Müdürlüğü, yurdun batı kesimlerinde kuvvetli yağış beklendiğini duyurdu. Marmara ve Ege bölgelerinde etkili olacak yağışların sel ve su baskınlarına neden olabileceği belirtildi.</p><p>İstanbul için yarın saat 12:00'den itibaren sarı kodlu uyarı verildi. Vatandaşların tedbirli olması istendi.</p>",
-    etiketler: ["meteoroloji", "yağış", "uyarı", "hava durumu"]
-  },
-  {
-    baslik: "Eğitimde yeni dönem başlıyor",
-    ozet: "Milli Eğitim Bakanı, önümüzdeki eğitim-öğretim yılında uygulanacak yeni sistemi tanıttı.",
-    kaynak: "Eğitim Haberleri",
-    kaynak_url: "https://example.com/egitim-haberleri/1",
-    resim_url: "https://picsum.photos/id/40/600/400",
-    kategori: "Eğitim",
-    yayinTarihi: new Date(),
-    icerik: "<p>Milli Eğitim Bakanı, önümüzdeki eğitim-öğretim yılında uygulanacak yeni sistemi tanıttı. Buna göre, okullarda yapay zeka destekli eğitim programları hayata geçirilecek.</p><p>Yeni sistemde öne çıkan yenilikler şöyle:</p><ul><li>Yapay zeka destekli öğrenme</li><li>Proje tabanlı değerlendirme</li><li>Sanal gerçeklik uygulamaları</li></ul>",
-    etiketler: ["eğitim", "yeni dönem", "milli eğitim", "yapay zeka"]
-  },
-  {
-    baslik: "Teknoloji devinden yeni akıllı telefon",
-    ozet: "Popüler teknoloji şirketi, yeni amiral gemisi akıllı telefonunu bugün düzenlenen etkinlikle tanıttı.",
-    kaynak: "Teknoloji Haberleri",
-    kaynak_url: "https://example.com/teknoloji-haberleri/1",
-    resim_url: "https://picsum.photos/id/50/600/400",
-    kategori: "Teknoloji",
-    yayinTarihi: new Date(),
-    icerik: "<p>Popüler teknoloji şirketi, yeni amiral gemisi akıllı telefonunu bugün düzenlenen etkinlikle tanıttı. Yeni model, gelişmiş kamera özellikleri ve daha uzun pil ömrüyle dikkat çekiyor.</p><p>Cihazın teknik özellikleri şöyle:</p><ul><li>6.7 inç OLED ekran</li><li>48 MP ana kamera</li><li>4500 mAh batarya</li><li>8 GB RAM</li><li>128/256 GB depolama</li></ul>",
-    etiketler: ["teknoloji", "akıllı telefon", "yeni model", "tanıtım"]
-  }
-];
-
 // Haber kaynaklarını tanımlama - Temel selektörler
 const kaynaklar: HaberKaynagi[] = [
   {
@@ -164,89 +105,139 @@ async function fetchHTML(url: string): Promise<string> {
 /**
  * HTML içeriğini işleyerek haberleri çıkartır
  */
-async function parseHaberler(html: string, kaynak: HaberKaynagi): Promise<Partial<IHaber>[]> {
-  if (!html) {
-    console.log(`${kaynak.name} için boş HTML döndü`);
+export async function parseHaberler(html: string, kaynak: HaberKaynagi): Promise<Partial<IHaber>[]> {
+  console.log(`${kaynak.name} için HTML işleniyor...`);
+  
+  if (!html || html.trim() === '') {
+    console.log(`${kaynak.name} için boş HTML içeriği. İşlem atlanıyor.`);
     return [];
   }
-  
+
   try {
-    console.log(`${kaynak.name} için HTML ayrıştırılıyor`);
-    const { document } = parseHTML(html);
+    const dom = parseHTML(html);
+    const document = dom.window.document;
     
-    // HTML içeriğinin bir kısmını log'a yazdır
-    const htmlPreview = html.slice(0, 500);
-    console.log(`HTML Önizleme: ${htmlPreview}...`);
+    let articleElements: Element[] = [];
     
-    // Tüm mevcut elementleri saydır
-    console.log(`HTML'deki toplam element sayısı: ${document.querySelectorAll('*').length}`);
+    // Selectorların bir array olmasını sağla ve her birini dene
+    const selectors = Array.isArray(kaynak.selectors.articles) ? kaynak.selectors.articles : [kaynak.selectors.articles];
     
-    // Spesifik arama yapalım
-    console.log(`Tüm <a> etiketleri: ${document.querySelectorAll('a').length}`);
-    console.log(`Tüm <div> etiketleri: ${document.querySelectorAll('div').length}`);
-    console.log(`Tüm <article> etiketleri: ${document.querySelectorAll('article').length}`);
-    
-    // Çok sayıda potansiyel makale selektörünü deneyelim
-    const potentialArticleSelectors = [
-      'article', '[data-article-id]', '.news-item', '.article', '.card', '.news', '.tile',
-      '[class*="news-item"]', '[class*="article"]', '[class*="card"]', '[class*="news"]',
-      '.list-item', '.feed-item', '.entry', '.post', '.story', '.headline', '.media',
-      'li.box', '.row a', '.grid-item', '.thumbnail', '.teaser', '.item', '.content-item'
-    ];
-    
-    let bestSelector = '';
-    let maxArticles = 0;
-    
-    for (const selector of potentialArticleSelectors) {
-      try {
-        const count = document.querySelectorAll(selector).length;
-        if (count > maxArticles) {
-          maxArticles = count;
-          bestSelector = selector;
-          console.log(`Yeni en iyi selektör: ${selector} (${count} öğe)`);
-        }
-      } catch (error: any) {
-        console.error(`Selektör hatası (${selector}): ${error.message}`);
+    // Her selector'ı dene ve en fazla sonuç vereni kullan
+    for (const selector of selectors) {
+      console.log(`${kaynak.name} için "${selector}" selector'ı deneniyor...`);
+      const elements = document.querySelectorAll(selector);
+      console.log(`${selector} selector'ı ile ${elements.length} element bulundu.`);
+      
+      if (elements.length > articleElements.length) {
+        articleElements = Array.from(elements);
       }
     }
     
-    console.log(`En çok öğe bulunan selektör: ${bestSelector} (${maxArticles} öğe)`);
-    
-    let articles;
-    if (maxArticles > 0) {
-      articles = document.querySelectorAll(bestSelector);
-    } else {
-      articles = document.querySelectorAll(kaynak.selectors.articles);
+    if (articleElements.length === 0) {
+      console.log(`${kaynak.name} kaynağında haber bulunamadı.`);
+      return [];
     }
     
-    console.log(`${kaynak.name} için ${articles.length} haber bulundu`);
+    console.log(`${kaynak.name} kaynağında ${articleElements.length} potansiyel haber bulundu.`);
+    
+    // En fazla 10 haber al
+    const limitedArticles = articleElements.slice(0, 10);
     
     const haberler: Partial<IHaber>[] = [];
     
-    articles.forEach((article: any, index: number) => {
+    for (const article of limitedArticles) {
       try {
-        if (index >= 10) return; // Sadece ilk 10 haberi al
+        // Title bulmak için farklı stratejiler dene
+        let title = '';
+        if (kaynak.selectors.title) {
+          const titleSelectors = Array.isArray(kaynak.selectors.title) ? kaynak.selectors.title : [kaynak.selectors.title];
+          
+          for (const titleSelector of titleSelectors) {
+            const titleElement = article.querySelector(titleSelector);
+            if (titleElement && titleElement.textContent) {
+              title = titleElement.textContent.trim();
+              break;
+            }
+          }
+        }
         
-        // Başlık elementleri
-        const possibleTitleElements = [
-          article.querySelector(kaynak.selectors.title),
-          article.querySelector('h1'),
-          article.querySelector('h2'),
-          article.querySelector('h3'),
-          article.querySelector('h4'),
-          article.querySelector('[class*="title"]'),
-          article.querySelector('[class*="headline"]'),
-          article.querySelector('[class*="heading"]'),
-          article.querySelector('b'),
-          article.querySelector('strong')
-        ].filter(Boolean);
+        // Title hala bulunamadıysa, alternatif yöntemler dene
+        if (!title) {
+          // h1, h2, h3, h4 etiketlerini kontrol et
+          for (const tag of ['h1', 'h2', 'h3', 'h4']) {
+            const element = article.querySelector(tag);
+            if (element && element.textContent) {
+              title = element.textContent.trim();
+              break;
+            }
+          }
+          
+          // Hala bulunamadıysa, article etiketinin kendisinin textContent'ini kullan
+          if (!title && article.textContent) {
+            title = article.textContent.trim().substring(0, 100);
+          }
+        }
         
-        const titleElement = possibleTitleElements.length > 0 ? possibleTitleElements[0] : null;
+        if (!title) {
+          console.log('Başlık bulunamadı, bu haberi atlıyorum.');
+          continue;
+        }
         
-        // Link elementleri
-        const linkElement = article.querySelector('a') || 
-                            article.closest('a') || 
-                            Array.from(article.querySelectorAll('a')).find((a: Element) => (a as HTMLAnchorElement).href);
+        // Link bulmak için farklı stratejiler dene
+        let link = '';
+        
+        // 1. Direkt article üzerinde a etiketi varsa
+        const anchorElement = article.querySelector('a');
+        if (anchorElement) {
+          const hrefAttr = anchorElement.getAttribute('href');
+          if (hrefAttr) {
+            link = hrefAttr;
+          }
+        }
+        
+        // 2. Link selector varsa kullan
+        if (!link && kaynak.selectors.link) {
+          const linkSelectors = Array.isArray(kaynak.selectors.link) ? kaynak.selectors.link : [kaynak.selectors.link];
+          
+          for (const linkSelector of linkSelectors) {
+            const linkElement = article.querySelector(linkSelector);
+            if (linkElement) {
+              const hrefAttr = linkElement.getAttribute('href');
+              if (hrefAttr) {
+                link = hrefAttr;
+                break;
+              }
+            }
+          }
+        }
+        
+        // 3. Tüm a etiketlerini tara ve ilk geçerli hrefe sahip olanı kullan
+        if (!link) {
+          const allAnchors = article.querySelectorAll('a');
+          for (let i = 0; i < allAnchors.length; i++) {
+            const anchor = allAnchors[i];
+            const hrefAttr = anchor.getAttribute('href');
+            if (hrefAttr) {
+              link = hrefAttr;
+              break;
+            }
+          }
+        }
+        
+        if (!link) {
+          console.log('Link bulunamadı, bu haberi atlıyorum.');
+          continue;
+        }
+        
+        // Link'i tam URL'ye dönüştür
+        if (link.startsWith('/')) {
+          // Göreceli URL ise, tam URL'ye dönüştür
+          const baseUrl = new URL(kaynak.baseUrl);
+          link = `${baseUrl.protocol}//${baseUrl.hostname}${link}`;
+        } else if (!link.startsWith('http')) {
+          // Protokol belirtilmemişse, tam URL'ye dönüştür
+          link = `https://${link}`;
+        }
         
         // Özet elementleri
         const possibleSummaryElements = [
@@ -269,37 +260,10 @@ async function parseHaberler(html: string, kaynak: HaberKaynagi): Promise<Partia
                                article.querySelector('[class*="category"]') ||
                                article.querySelector('[class*="tag"]');
         
-        let titleText = '';
-        if (titleElement) {
-          titleText = titleElement.textContent?.trim() || '';
+        let summary = '';
+        if (summaryElement) {
+          summary = summaryElement.textContent?.trim() || '';
         }
-        
-        // Başlık bulunamadıysa ve link varsa, link metnini kullan
-        if (!titleText && linkElement) {
-          titleText = linkElement.textContent?.trim() || '';
-        }
-        
-        // Hala başlık bulunamadıysa, indeks ile oluştur
-        if (!titleText) {
-          titleText = `${kaynak.name} Haber ${index + 1}`;
-        }
-        
-        let link = '';
-        if (linkElement) {
-          link = linkElement.getAttribute('href') || '';
-        }
-        
-        // Link göreceli ise mutlak URL oluştur
-        if (link && !link.startsWith('http')) {
-          link = `${kaynak.baseUrl}${link.startsWith('/') ? '' : '/'}${link}`;
-        }
-        
-        // Link bulunamadıysa, kaynak ana sayfasını kullan
-        if (!link) {
-          link = kaynak.url;
-        }
-        
-        const summary = summaryElement ? summaryElement.textContent?.trim() || '' : '';
         
         let image = '';
         if (imageElement) {
@@ -320,16 +284,16 @@ async function parseHaberler(html: string, kaynak: HaberKaynagi): Promise<Partia
         
         // Resim bulunamadıysa, placeholder kullan
         if (!image) {
-          image = `https://picsum.photos/id/${index + 1}/600/400`;
+          image = `https://picsum.photos/id/${Math.floor(Math.random() * 100) + 1}/600/400`;
         }
         
         const category = categoryElement ? categoryElement.textContent?.trim() || 'Genel' : 'Genel';
         
-        console.log(`Haber bulundu: "${titleText}" - ${link}`);
+        console.log(`Haber bulundu: "${title}" - ${link}`);
         
         haberler.push({
-          baslik: titleText,
-          ozet: summary || `${titleText} hakkında detaylı bilgi için tıklayın.`,
+          baslik: title,
+          ozet: summary || `${title} hakkında detaylı bilgi için tıklayın.`,
           kaynak: kaynak.name,
           kaynak_url: link,
           resim_url: image,
@@ -341,18 +305,10 @@ async function parseHaberler(html: string, kaynak: HaberKaynagi): Promise<Partia
       } catch (error) {
         console.error(`${kaynak.name} - Haber ayrıştırma hatası:`, error);
       }
-    });
+    }
     
     if (haberler.length === 0) {
-      console.log(`${kaynak.name} için haber bulunamadı, örnek haberler kullanılacak`);
-      // Her kaynak için 1 tane örnek haber ekle
-      const ornekHaber = ornekHaberler[Math.floor(Math.random() * ornekHaberler.length)];
-      haberler.push({
-        ...ornekHaber,
-        baslik: `${ornekHaber.baslik} (${kaynak.name})`,
-        kaynak: kaynak.name,
-        yayinTarihi: new Date()
-      });
+      console.log(`${kaynak.name} için haber bulunamadı`);
     }
     
     return haberler;
@@ -370,26 +326,14 @@ async function crawlKaynak(kaynak: HaberKaynagi): Promise<Partial<IHaber>[]> {
     console.log(`${kaynak.name} kaynağı taranıyor...`);
     const html = await fetchHTML(kaynak.url);
     if (!html) {
-      console.log(`${kaynak.name} için HTML içeriği alınamadı, örnek haberler kullanılacak`);
-      // HTML alınamadıysa örnek haber ekle
-      return [{
-        ...ornekHaberler[Math.floor(Math.random() * ornekHaberler.length)],
-        baslik: `${ornekHaberler[0].baslik} (${kaynak.name})`,
-        kaynak: kaynak.name,
-        yayinTarihi: new Date()
-      }];
+      console.log(`${kaynak.name} için HTML içeriği alınamadı`);
+      return [];
     }
     
     return await parseHaberler(html, kaynak);
   } catch (error) {
     console.error(`${kaynak.name} - Kaynak tarama hatası:`, error);
-    // Hata durumunda örnek haber ekle
-    return [{
-      ...ornekHaberler[Math.floor(Math.random() * ornekHaberler.length)],
-      baslik: `${ornekHaberler[1].baslik} (${kaynak.name})`,
-      kaynak: kaynak.name,
-      yayinTarihi: new Date()
-    }];
+    return [];
   }
 }
 
@@ -406,18 +350,10 @@ export async function tumKaynaklariCrawlEt(): Promise<Partial<IHaber>[]> {
     const tumHaberler = tumHaberlerArrays.flat();
     console.log(`Toplam ${tumHaberler.length} haber bulundu`);
     
-    // Hiç haber bulunamadıysa örnek haberleri kullan
-    if (tumHaberler.length === 0) {
-      console.log(`Hiç haber bulunamadı, örnek haberler kullanılacak`);
-      return ornekHaberler;
-    }
-    
     return tumHaberler;
   } catch (error) {
     console.error('Tüm kaynakları tarama hatası:', error);
-    // Hata durumunda örnek haberleri döndür
-    console.log(`Hata nedeniyle örnek haberler kullanılacak`);
-    return ornekHaberler;
+    return [];
   }
 }
 
@@ -427,15 +363,6 @@ export async function tumKaynaklariCrawlEt(): Promise<Partial<IHaber>[]> {
 export async function haberIcerikCek(url: string): Promise<string> {
   try {
     console.log(`İçerik çekiliyor: ${url}`);
-    
-    // Eğer örnek haber URL'si ise, örnek içerik döndür
-    if (url.includes('example.com')) {
-      console.log('Örnek haber URL tespit edildi, örnek içerik döndürülüyor');
-      return `<p>Bu bir örnek haber içeriğidir.</p>
-              <p>Haber kaynaklarından içerik çekilemediği durumlarda bu içerik gösterilmektedir.</p>
-              <p>Haber kaynakları robot engelleme (anti-bot) sistemleri kullandığından içerik çekilememiş olabilir.</p>
-              <p>Gerçek haberler için lütfen ilgili haber sitesini ziyaret edin.</p>`;
-    }
     
     const html = await fetchHTML(url);
     if (!html) {

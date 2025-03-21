@@ -57,49 +57,79 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
 }`;
 
     // Gemini API'sine istek gönder
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-      {
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      }
-    );
-
-    // API yanıtını işle
-    const data: GeminiResponse = response.data;
-    const generatedText = data.candidates[0].content.parts[0].text;
-    
-    // JSON yanıtını işle
     try {
-      // Gemini bazen JSON etrafına ``` ekleyebilir, bunları kaldır
-      const cleanedText = generatedText.replace(/```json\n|\n```|```/g, "");
-      const processedNews: ProcessedNews = JSON.parse(cleanedText);
+      console.log(`Gemini API'ye istek gönderiliyor: ${apiKey.substring(0, 5)}...`);
+      const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        {
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          }
+        }
+      );
+
+      // API yanıtını işle
+      const data: GeminiResponse = response.data;
       
-      // Güncellenmiş haberi döndür
-      return {
-        ...haber,
-        baslik: processedNews.baslik,
-        ozet: processedNews.ozet,
-        icerik: processedNews.icerik,
-        etiketler: processedNews.etiketler,
-      };
-    } catch (parseError) {
-      console.error("Gemini yanıtı JSON olarak ayrıştırılamadı:", parseError);
-      console.log("Alınan yanıt:", generatedText);
-      return haber; // Ayrıştırma hatası durumunda orijinal haberi döndür
+      // Response içeriğini kontrol et
+      if (!data || !data.candidates || !data.candidates.length || !data.candidates[0].content) {
+        console.error("Gemini API yanıtı boş veya geçersiz format döndürdü:", data);
+        return haber; // Orijinal haberi döndür
+      }
+      
+      const generatedText = data.candidates[0].content.parts[0].text;
+      
+      // JSON yanıtını işle
+      try {
+        // Gemini bazen JSON etrafına ``` ekleyebilir, bunları kaldır
+        const cleanedText = generatedText.replace(/```json\n|\n```|```/g, "");
+        const processedNews: ProcessedNews = JSON.parse(cleanedText);
+        
+        // Güncellenmiş haberi döndür
+        return {
+          ...haber,
+          baslik: processedNews.baslik,
+          ozet: processedNews.ozet,
+          icerik: processedNews.icerik,
+          etiketler: processedNews.etiketler,
+        };
+      } catch (parseError) {
+        console.error("Gemini yanıtı JSON olarak ayrıştırılamadı:", parseError);
+        console.log("Alınan yanıt:", generatedText);
+        return haber; // Ayrıştırma hatası durumunda orijinal haberi döndür
+      }
+    } catch (error: any) {
+      // Hata detaylarını daha kapsamlı logla
+      console.error("Gemini API hatası:");
+      
+      if (error.response) {
+        // Sunucunun yanıt döndüğü durumda
+        console.error(`Durum kodu: ${error.response.status}`);
+        console.error(`Hata mesajı: ${JSON.stringify(error.response.data)}`);
+        console.error(`Hata başlıkları: ${JSON.stringify(error.response.headers)}`);
+      } else if (error.request) {
+        // İstek yapıldı ama yanıt alınamadı
+        console.error("Yanıt alınamadı");
+        console.error(error.request);
+      } else {
+        // İstek oluşturulurken bir hata oldu
+        console.error("İstek hatası:", error.message);
+      }
+      
+      // Orijinal haberi değiştirmeden döndür
+      return haber;
     }
   } catch (error) {
     console.error("Gemini API hatası:", error);

@@ -38,7 +38,7 @@ Bu proje, çeşitli haber kaynaklarından haberleri otomatik olarak çeker, içe
 
 1. Repoyu klonlayın:
    ```bash
-   git clone https://github.com/username/turkiyedeneleroluyor.git
+   git clone https://github.com/hermesthecat/turkiyedeneleroluyor.git
    cd turkiyedeneleroluyor
    ```
 
