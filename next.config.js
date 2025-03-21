@@ -9,6 +9,7 @@ const nextConfig = {
       'im.haberturk.com', 
       'picsum.photos',
       'foto.haberler.com',
+      'www.haberler.com',
       'img.posta.com.tr',
       'imgrosetta.mynet.com.tr',
       'img.milliyet.com.tr',
@@ -26,4 +27,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig 
+module.exports = nextConfig
