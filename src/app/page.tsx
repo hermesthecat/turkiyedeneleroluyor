@@ -59,6 +59,9 @@ export default async function Home() {
                       <span className="btn text-sm">Devamını Oku</span>
                     </Link>
                   </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Kaynak: <a href={haber.kaynak_url} target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-500">{haber.kaynak}</a>
+                  </p>
                 </div>
               </article>
             ))
