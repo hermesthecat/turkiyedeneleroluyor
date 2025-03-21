@@ -60,7 +60,7 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
     try {
       console.log(`Gemini API'ye istek gönderiliyor: ${apiKey.substring(0, 5)}...`);
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         {
           contents: [
             {
@@ -72,7 +72,7 @@ Yanıtını tam olarak şu JSON formatında döndür (başka bir şey yazma):
             }
           ],
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.4,
             topK: 40,
             topP: 0.95,
             maxOutputTokens: 1024,

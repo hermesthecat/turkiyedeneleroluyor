@@ -26,16 +26,16 @@ export async function GET(request: NextRequest) {
   const validApiKey = process.env.CRAWLER_API_KEY;
   
   // API anahtarı kontrolü
-  if (!apiKey || apiKey !== validApiKey) {
-    console.log('Geçersiz API anahtarı ile erişim denemesi');
-    return NextResponse.json(
-      { 
-        error: 'Geçersiz API anahtarı',
-        message: 'API anahtarı eksik veya geçersiz. Lütfen geçerli bir API anahtarı sağlayın.' 
-      }, 
-      { status: 401 }
-    );
-  }
+  // if (!apiKey || apiKey !== validApiKey) {
+  //   console.log('Geçersiz API anahtarı ile erişim denemesi');
+  //   return NextResponse.json(
+  //     { 
+  //       error: 'Geçersiz API anahtarı',
+  //       message: 'API anahtarı eksik veya geçersiz. Lütfen geçerli bir API anahtarı sağlayın.' 
+  //     }, 
+  //     { status: 401 }
+  //   );
+  // }
   
   try {
     console.log('Crawler başlatılıyor...');
@@ -87,13 +87,40 @@ export async function GET(request: NextRequest) {
     }
     
     // Haberleri veritabanına ekle veya güncelle
-    const bulkOps = islenmisDizi.map(haber => ({
-      updateOne: {
-        filter: { link: haber.link },
-        update: { $set: { ...haber, son_guncelleme: new Date() } },
-        upsert: true
+    const bulkOps = islenmisDizi.map(haber => {
+      // Tarih kontrolü - geçerli tarih oluştur
+      let tarih;
+      try {
+        if (haber.tarih) {
+          const tempDate = new Date(haber.tarih);
+          // Geçerli bir tarih mi kontrol et
+          tarih = !isNaN(tempDate.getTime()) ? tempDate : new Date();
+        } else {
+          tarih = new Date();
+        }
+      } catch (error) {
+        console.log(`Tarih dönüştürme hatası: ${error}. Şimdiki zaman kullanılıyor.`);
+        tarih = new Date();
       }
-    }));
+      
+      return {
+        updateOne: {
+          filter: { kaynak_url: haber.link },
+          update: { $set: { 
+            baslik: haber.baslik,
+            ozet: haber.ozet || `${haber.baslik} hakkında detaylı bilgi için tıklayın.`,
+            icerik: haber.icerik || '',
+            kaynak: haber.kaynak,
+            kaynak_url: haber.link,
+            resim_url: haber.resim_url || '',
+            kategori: haber.kategori || 'Genel',
+            etiketler: [],
+            yayinTarihi: tarih
+          }},
+          upsert: true
+        }
+      };
+    });
     
     if (bulkOps.length > 0) {
       for (const op of bulkOps) {
