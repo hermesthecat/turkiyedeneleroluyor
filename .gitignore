@@ -39,7 +39,7 @@ next-env.d.ts
 # MongoDB
 /data
 /public/uploads
-.root/
+.roo/
 memory-bank/
 .rooignore
 .roomodes
