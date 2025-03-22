@@ -39,3 +39,9 @@ next-env.d.ts
 # MongoDB
 /data
 /public/uploads
+.root/
+memory-bank/
+.rooignore
+.roomodes
+insert-variables*
+default-mode/
